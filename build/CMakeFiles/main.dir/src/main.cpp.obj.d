@@ -159,13 +159,13 @@ CMakeFiles/main.dir/src/main.cpp.obj: \
  C:/mingw64_GCC8.1/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/bits/stl_heap.h \
  C:/mingw64_GCC8.1/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/bits/stl_tempbuf.h \
  C:/mingw64_GCC8.1/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/bits/uniform_int_dist.h \
- C:/Users/86173/Desktop/CCCourseDesign/include/Controler.hpp \
- C:/Users/86173/Desktop/CCCourseDesign/include/View.hpp \
  C:/mingw64_GCC8.1/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/fstream \
  C:/mingw64_GCC8.1/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/bits/codecvt.h \
  C:/mingw64_GCC8.1/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/x86_64-w64-mingw32/bits/basic_file.h \
  C:/mingw64_GCC8.1/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/x86_64-w64-mingw32/bits/c++io.h \
  C:/mingw64_GCC8.1/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/bits/fstream.tcc \
+ C:/Users/86173/Desktop/CCCourseDesign/include/Controler.hpp \
+ C:/Users/86173/Desktop/CCCourseDesign/include/View.hpp \
  C:/mingw64_GCC8.1/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/random \
  C:/mingw64_GCC8.1/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/cmath \
  C:/mingw64_GCC8.1/mingw64/x86_64-w64-mingw32/include/math.h \

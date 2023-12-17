@@ -11,9 +11,10 @@ int main() {
     std::srand(std::time(nullptr));
     TeamsInformationTable table;
     Queryer queryer(table);
-    IViewer* viewer = new ConsoleView();
-    Controler controler(queryer,viewer);
-    controler.addTeamFromTxtFile("../Assets/team.txt");
+    queryer.addTeamFromTxtFile("../Assets/team.txt");
+    queryer.spawnOrderBookFromTxtFile("../Assets/决赛分组-江科大.txt");
+
+    Controler controler(queryer,new ConsoleView());
     controler.run();
     return 0;
 }

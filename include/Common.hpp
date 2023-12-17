@@ -8,7 +8,7 @@
 
 #define assertm(msg,cond) assert(((msg),(cond)))
 
-
+inline static constexpr uint8_t GroupNumber = 17;
 
 using id_t = uint64_t;
 using entryName_t = std::string;
@@ -24,4 +24,10 @@ struct BasicInformation
     category_t category;
     competitor_t competitor;
     advisor_t advisor;
+};
+
+
+struct CException final
+{
+    std::string message;
 };

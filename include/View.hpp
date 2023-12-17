@@ -9,7 +9,6 @@ public:
     virtual void waitingForInput(std::stringstream& stream,std::string_view message) = 0;
     virtual void showMenu() = 0;
     virtual void showTeamInfor(const id_t& id,const BasicInformation& infor) = 0;
-    virtual void showScore(const id_t& id) = 0;
     virtual void showMessage(std::string_view message) = 0;
 };
 
@@ -38,9 +37,6 @@ public:
         
     }
 
-    void showScore(const id_t& id) override {
-        
-    }
 
     void showMessage(std::string_view message) override {
         std::cout << "message: " << message;
