@@ -6,9 +6,103 @@
 #include<functional>
 #include<fstream>
 #include<array>
+#include<random>
 
 
 /*（1）	赛事信息管理：从team.txt中读取参赛队伍的基本信息，设计合适的数据结构存储，能实现对参赛队伍的增加、修改和浏览。为参赛队伍分配一个分数为60~100之间的初赛成绩，并能实现参赛队伍的成绩查询（实现基于二叉排序树的查找）。设计合适的输入输出，根据提示输入参赛队编号，查询队伍的初赛成绩，若查找成功，输出该赛事类别对应的基本信息（参赛作品名称、参赛学校、赛事类别、参赛者和初赛成绩信息）。另外，输出全部参赛队的平均查找长度ASL。*/
+
+class BSTree final
+{
+public:
+    
+    using key_t = id_t;
+    using value_t = int;
+
+    struct Node final
+    {
+        key_t key;
+        value_t value;
+        Node*left,*right;
+    };
+
+public:
+
+    BSTree() :root_(nullptr) {}
+
+
+
+    ~BSTree() {
+        _clear(root_);
+    }
+
+
+
+    void insert(const key_t& key,const value_t& value) {
+        root_ = _insert(root_,key,value);
+    }
+
+
+
+    value_t* find(const key_t& key) {
+        Node* res = _find(root_,key);
+        if (res == nullptr) {
+            return nullptr;
+        } else {
+            return &res->value;
+        }
+    }
+
+
+private:
+
+    Node* _insert(Node* root,const key_t& key,const value_t& value) {
+        if (root == nullptr)return new Node{ key,value,nullptr,nullptr };
+        if (key < root->key) {
+            root->left = _insert(root->left,key,value);
+        } else {
+            root->right = _insert(root->right,key,value);
+        }
+        return root;
+    }
+
+
+
+    Node* _find(Node* root,const key_t& key) {
+        if (root == nullptr)return nullptr;
+        if (key == root->key) {
+            return root;
+        } else if (key < root->key) {
+            return _find(root->left,key);
+        } else {
+            return _find(root->right,key);
+        }
+    }
+
+
+
+    void _clear(Node* root) {
+        if (root) {
+            _clear(root->left),_clear(root->right);
+            delete root;
+        }
+    }
+
+
+private:
+    Node* root_;
+};
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 class TeamsInformationTable final
@@ -25,33 +119,43 @@ private:
         
         using group_t = std::vector<id_t>;
 
-        void addTeam(const id_t& id,int groupIndex) {
+
+        
+        void addTeam(const key_t& id,int groupIndex) {
             assertm("out of range",groupIndex <= GroupNumber && groupIndex>=1);
             groups_[groupIndex - 1].push_back(id);
             teamsMap_.insert(std::make_pair(id,groupIndex));
         }
 
-        int queryGroupIndex(const id_t& id) const noexcept {
+
+        
+        int queryGroupIndex(const key_t& id) const noexcept {
             if (auto it = teamsMap_.find(id);it != teamsMap_.end()) {
                 return it->second;
             }
             return -1;
         }
 
+
+        
         const group_t& getGroup(int groupIndex) const noexcept {
             assertm("out of range",groupIndex <= GroupNumber && groupIndex>=1);
-            return groups_[groupIndex];
+            return groups_[groupIndex-1];
         }
 
+        
     private:
         std::array<group_t,GroupNumber> groups_;
-        std::unordered_map<id_t,int> teamsMap_;
+        std::unordered_map<key_t,int> teamsMap_;
     };
 
+    
 private:
     using basicInforTable_t = std::unordered_map<key_t,value_t>;
+    using scoreInforTable_t = BSTree;
     using orderBookTable_t = OrderBookTable;
     basicInforTable_t basicInfors_;
+    scoreInforTable_t scoreInfors;
     orderBookTable_t orderBook_;
 };
 
@@ -65,11 +169,15 @@ public:
 
     Queryer(TeamsInformationTable& table) :informations_(table) {}
 
+
+    
     void addTeam(const id_t& id,const BasicInformation& infor) noexcept {
         informations_.basicInfors_.insert(std::make_pair(id,infor));
         return;
     }
 
+
+    
     void addTeamFromTxtFile(const std::string& path) {
         std::fstream fs;
         fs.open(path);
@@ -105,6 +213,7 @@ public:
         fs.close();
     }
 
+
     
     void spawnOrderBookFromTxtFile(const std::string& path) {
         std::fstream fs;
@@ -121,6 +230,16 @@ public:
     }
     
 
+
+    void distributeScore() {
+        for (auto &[key,value] : informations_.basicInfors_) {
+            int score = 40 + std::rand() % 61;
+            informations_.scoreInfors.insert(key,score);
+        }
+    }
+
+
+    
     bool exist(const id_t& id) const noexcept {
         if (auto it = informations_.basicInfors_.find(id);
             it != informations_.basicInfors_.end()) {
@@ -130,6 +249,7 @@ public:
     }
 
 
+    
     BasicInformation queryInformation(const id_t& id) const {
         if (auto it = informations_.basicInfors_.find(id);
             it != informations_.basicInfors_.end()) {
@@ -142,6 +262,7 @@ public:
     }
 
 
+    
     void modifyInformation(const id_t& id,const BasicInformation& infor) {
         if (auto it = informations_.basicInfors_.find(id);
             it != informations_.basicInfors_.end()) {
@@ -153,14 +274,32 @@ public:
         return;
     }
 
+
+
+    int queryScore(const id_t& id) const {
+        if (auto it = informations_.scoreInfors.find(id);it) {
+            return *it;
+        } else {
+            assertm("not found id",false);
+            throw CException{ "not found id" };
+        }
+        return -1;
+    }
+    
+
+    
     int queryGroupIndex(const id_t& id) const {
         return informations_.orderBook_.queryGroupIndex(id);
     }
 
+
+    
     const std::vector<id_t>& getGroup(int groupIndex) const {
         return informations_.orderBook_.getGroup(groupIndex);
     }
 
+
+    
     void for_each(std::function<void(const id_t& id)>&& func) noexcept {
         for (auto it = informations_.basicInfors_.begin();
             it != informations_.basicInfors_.end();++it) {
@@ -168,9 +307,16 @@ public:
         }
     }
 
+
+    
     size_t getSize() const noexcept {
         return informations_.basicInfors_.size();
     }
+
+
 private:
     TeamsInformationTable& informations_;
 };
+
+
+

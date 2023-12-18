@@ -1,8 +1,8 @@
 #include<iostream>
 #include<ctime>
 #include"../include/Data.hpp"
-#include"../include/Controler.hpp"
-#include"../include/View.hpp"
+#include"../include/Presenter.hpp"
+
 
 using std::cin;
 using std::cout;
@@ -13,8 +13,9 @@ int main() {
     Queryer queryer(table);
     queryer.addTeamFromTxtFile("../Assets/team.txt");
     queryer.spawnOrderBookFromTxtFile("../Assets/决赛分组-江科大.txt");
+    queryer.distributeScore();
 
-    Controler controler(queryer,new ConsoleView());
-    controler.run();
+    Presenter presenter(queryer);
+    presenter.run();
     return 0;
 }

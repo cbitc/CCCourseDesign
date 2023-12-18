@@ -5,6 +5,7 @@
 #include<string>
 #include<sstream>
 #include<iostream>
+#include<vector>
 
 #define assertm(msg,cond) assert(((msg),(cond)))
 
@@ -30,4 +31,18 @@ struct BasicInformation
 struct CException final
 {
     std::string message;
+};
+
+
+
+struct TeamInfor final
+{
+    id_t id;
+    int time;
+};
+
+struct GroupInfor final
+{
+    std::vector<TeamInfor> teams;
+    int currentTeam;
 };
