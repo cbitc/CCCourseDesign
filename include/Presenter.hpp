@@ -19,34 +19,51 @@ using std::cin;
 
 class Presenter
 {
-    inline static const char* OutputFormat2 = "(id: %d,entryName: %s,shoolName: %s,category: %s,competitor: %s,advisor : %s)\n";
 
-    inline static const char* OutputFormat1 = "(id: %d,entryName: %s,shoolName: %s,category: %s,competitor: %s,advisor: %s,score: %d)\n";
+    inline static const char* OutputFormat = "(id: %d,entryName: %s,shoolName: %s,category: %s,competitor: %s,advisor: %s,score: %d)\n";
 
 public:
 
-    Presenter(Queryer queryer) :queryer_(queryer) {}
+    explicit Presenter(Queryer queryer) noexcept {}
 
 
 
-    void queryRequest(bool& isQuit) {
+    void queryRequest(const Queryer queryer) noexcept {
         stream_.clear();
         cout << ">>";
-        system("color 0e");
         std::string input;
         cin >> input;
-        if (input == "-q") {
-            isQuit = true;
+        if (input == "-b") {
             return;
         }
 
         id_t id;
         stream_ << input;stream_ >> id;
 
-        if (queryer_.exist(id)) {
-            const BasicInformation& infor = queryer_.queryInformation(id);
-            int score = queryer_.queryScore(id);
-            printf(OutputFormat1,id,infor.entryName.c_str(),infor.school.c_str(),infor.category.c_str(),infor.competitor.c_str(),infor.advisor.c_str(),score);
+
+        const BasicInformation* infor = queryer.queryBasicInformation(id);
+        const int* score = queryer.queryScore(id);
+        _displayInfor(id,score,infor);
+        return;
+    }
+
+
+
+    void modifyRequest(Queryer queryer) noexcept {
+        stream_.clear();
+        cout << ">>";
+        std::string input;
+        cin >> input;
+        if (input == "-b") {
+            return;
+        }
+
+        id_t id;
+        stream_ << input;stream_ >> id;
+
+        BasicInformation* infor = queryer.queryBasicInformation(id);
+        if (infor) {
+
         } else {
             printf("\n the id has not exist\n");
         }
@@ -54,36 +71,71 @@ public:
 
 
 
-    void queryFeatures() {
+    void browseRequest(const Queryer queryer) noexcept {
+        queryer.for_each([](const id_t& id,const BasicInformation& infor) {
+
+            });
+    }
+
+
+
+    void inforManagermentFeatures(Queryer queryer) noexcept {
+
         FreeConsole();
         AllocConsole();
         system("mode con cols=100 lines=30");
         system("color 0e");
-        printf("input the id you want to query or input -q to quit\n");
+        printf("input:\n1: to query certain team information\n2: to modify certain team information\n3: browse all teams information\n-q: exit \n");
+
+
         bool isQuit = false;
         while (!isQuit) {
-            queryRequest(isQuit);
+            stream_.clear();
+            cout << ">>";
+            std::string input;
+            cin >> input;
+            if (input == "-q") {
+                isQuit = true;
+            } else {
+                int number;stream_ >> number;
+                if (number == 1) {
+                    queryRequest(queryer);
+                } else if (number == 2) {
+                    modifyRequest(queryer);
+                } else if (number == 3) {
+                    browseRequest(queryer);
+                } else {
+                    printf("");
+                    continue;
+                }
+            }
         }
+
         FreeConsole();
+
         return;
     }
 
-    void entryFinalFeatures() {
+
+
+    void entryFinalFeatures(const Queryer queryer) noexcept {
+
         FreeConsole();
         AllocConsole();
         system("mode con cols=100 lines=80");
         system("color 0c");
 
+
         std::array<GroupInfor,GroupNumber> groups;
 
         for (int i = 1;i <= GroupNumber;i++) {
-            const auto& group = queryer_.getGroup(i);
+            const auto& group = queryer.getGroup(i);
             auto& currentGroup = groups[i - 1];
             for (const auto& id : group) {
                 int time = 10 + std::rand() % 6;
                 currentGroup.teams.push_back({ id,time });
             }
-            _sort(currentGroup.teams);
+            _sort(queryer,currentGroup.teams);
             currentGroup.currentTeam = 0;
         }
 
@@ -109,20 +161,29 @@ public:
 
                 printf("CurrentRoom:%d\n",i);
                 printf("CurrentTeam:\n");
-                _displayInfor(group.teams[currentTeam].id);
+                const BasicInformation* infor = queryer.
+                    queryBasicInformation(group.teams[currentTeam].id);
+                const int* score = queryer.queryScore(group.teams[currentTeam].id);
+                _displayInfor(group.teams[currentTeam].id,score,infor);
 
                 printf("\nHas over Teams\n");
                 for (int i = 0;i < currentTeam;i++) {
-                    _displayInfor(group.teams[i].id);
+                    const BasicInformation* infor = queryer.
+                        queryBasicInformation(group.teams[currentTeam].id);
+                    const int* score = queryer.queryScore(group.teams[currentTeam].id);
+                    _displayInfor(group.teams[i].id,score,infor);
                 }
 
                 printf("\nWaitting Teams\n");
                 for (int i = currentTeam + 1;i < group.teams.size();i++) {
-                    _displayInfor(group.teams[i].id);
+                    const BasicInformation* infor = queryer.
+                        queryBasicInformation(group.teams[currentTeam].id);
+                    const int* score = queryer.queryScore(group.teams[currentTeam].id);
+                    _displayInfor(group.teams[i].id,score,infor);
                 }
                 system("pause");
             }
-            
+
             Sleep(1000);
         }
     }
@@ -131,7 +192,8 @@ public:
 
 
 
-    void handleInput(bool& isQuit,DWORD processID) {
+    void menuFeatures(Queryer queryer,bool& isQuit) noexcept {
+        stream_.clear();
         std::string input;
         cout << ">>";
         cin >> input;
@@ -142,35 +204,31 @@ public:
         }
 
         if (input == "1") {
-            queryFeatures();
-        }
-        else if (input == "2") {
-            entryFinalFeatures();
-        }
-        else if (input == "3") {
-            
+            inforManagermentFeatures(queryer);
+        } else if (input == "2") {
+            entryFinalFeatures(queryer);
+        } else if (input == "3") {
+
         } else {
-            
+
         }
         AttachConsole(ATTACH_PARENT_PROCESS);
         return;
     }
 
 
-    
-    void run() {
-        HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
-        DWORD id = GetProcessId(handle);
+
+    void run(Queryer queryer) {
         _displayMenu();
         bool isQuit = false;
         while (!isQuit) {
-            handleInput(isQuit,id);
+            menuFeatures(queryer,isQuit);
         }
     }
 
 private:
 
-    void _displayMenu() const {
+    static void _displayMenu() {
         printf("welcome to use the system\n");
         printf("There are several features for you to use\n");
         printf("input 1 to use the query features\n");
@@ -178,15 +236,15 @@ private:
         printf("input 3 to use the navigation features\n");
     }
 
-    
-    void _sort(std::vector<TeamInfor>& teams) const {
+
+    static void _sort(const Queryer queryer,std::vector<TeamInfor>& teams) noexcept {
         for (int i = 1;i < teams.size();i++) {
             const int currentID = teams[i].id;
-            const int score1 = queryer_.queryScore(currentID);
+            const int* score1 = queryer.queryScore(currentID);
             int j = i - 1;
             for (;j >= 0;j--) {
-                const int score2 = queryer_.queryScore(teams[j].id);
-                if (score1 <= score2) {
+                const int* score2 = queryer.queryScore(teams[j].id);
+                if (*score1 <= *score2) {
                     break;
                 } else {
                     teams[j + 1].id = teams[j].id;
@@ -197,15 +255,17 @@ private:
     }
 
 
-    
-    void _displayInfor(const id_t& id) const {
-        const BasicInformation infor = queryer_.queryInformation(id);
-        printf(OutputFormat2,id,infor.entryName.c_str(),infor.school.c_str(),infor.category.c_str(),infor.competitor.c_str(),infor.advisor.c_str());
+
+    static void _displayInfor(const id_t& id,const int* score,const BasicInformation* infor) noexcept {
+        if (infor == nullptr) {
+            printf("no found id\n");
+            return;
+        }
+        printf(OutputFormat,id,infor->entryName.c_str(),infor->school.c_str(),infor->category.c_str(),infor->competitor.c_str(),infor->advisor.c_str(),*score);
     };
 
 
 private:
-    std::stringstream stream_;
-    Queryer queryer_;
+    inline static std::stringstream stream_;
 
 };

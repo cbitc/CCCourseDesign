@@ -13,8 +13,7 @@
 
 class BSTree final
 {
-public:
-    
+
     using key_t = id_t;
     using value_t = int;
 
@@ -27,7 +26,7 @@ public:
 
 public:
 
-    BSTree() :root_(nullptr) {}
+    explicit BSTree() noexcept :root_(nullptr) {}
 
 
 
@@ -37,13 +36,13 @@ public:
 
 
 
-    void insert(const key_t& key,const value_t& value) {
+    void insert(const id_t& key,int value) noexcept {
         root_ = _insert(root_,key,value);
     }
 
 
 
-    value_t* find(const key_t& key) {
+    int* find(const id_t& key) const noexcept {
         Node* res = _find(root_,key);
         if (res == nullptr) {
             return nullptr;
@@ -55,7 +54,7 @@ public:
 
 private:
 
-    Node* _insert(Node* root,const key_t& key,const value_t& value) {
+    Node* _insert(Node* root,const key_t& key,const value_t& value) const noexcept {
         if (root == nullptr)return new Node{ key,value,nullptr,nullptr };
         if (key < root->key) {
             root->left = _insert(root->left,key,value);
@@ -67,7 +66,7 @@ private:
 
 
 
-    Node* _find(Node* root,const key_t& key) {
+    Node* _find(Node* root,const key_t& key) const noexcept {
         if (root == nullptr)return nullptr;
         if (key == root->key) {
             return root;
@@ -80,7 +79,7 @@ private:
 
 
 
-    void _clear(Node* root) {
+    void _clear(Node* root) const noexcept {
         if (root) {
             _clear(root->left),_clear(root->right);
             delete root;
@@ -105,58 +104,83 @@ private:
 
 
 
-class TeamsInformationTable final
+class InformationTable final
 {
+
     friend class Queryer;
     using key_t = id_t;
     using value_t = BasicInformation;
+
 private:
-    
+
     class OrderBookTable final
     {
-    
+
     public:
-        
+
         using group_t = std::vector<id_t>;
 
 
-        
-        void addTeam(const key_t& id,int groupIndex) {
-            assertm("out of range",groupIndex <= GroupNumber && groupIndex>=1);
+
+        bool addTeam(const id_t& id,int groupIndex) {
+            bool legal = groupIndex <= GroupNumber && groupIndex >= 1;
+            assertm("out of range",legal);
+            if (!legal) {
+                return false;
+            }
             groups_[groupIndex - 1].push_back(id);
             teamsMap_.insert(std::make_pair(id,groupIndex));
+            return true;
         }
 
 
-        
-        int queryGroupIndex(const key_t& id) const noexcept {
+
+        int queryGroupIndex(const id_t& id) const noexcept {
             if (auto it = teamsMap_.find(id);it != teamsMap_.end()) {
                 return it->second;
             }
+
             return -1;
         }
 
 
-        
-        const group_t& getGroup(int groupIndex) const noexcept {
-            assertm("out of range",groupIndex <= GroupNumber && groupIndex>=1);
-            return groups_[groupIndex-1];
+
+        const group_t& getGroup(int groupIndex) const {
+            bool legal = groupIndex <= GroupNumber && groupIndex >= 1;
+            assertm("out of range",legal);
+            if (!legal) {
+                throw CException{ "groupIndex must in (1-17)" };
+            }
+            return groups_[groupIndex - 1];
         }
 
-        
+
+
+        group_t& getGroup(int groupIndex) {
+            bool legal = groupIndex <= GroupNumber && groupIndex >= 1;
+            assertm("out of range",legal);
+            if (!legal) {
+                throw CException{ "groupIndex must in (1-17)" };
+            }
+            return groups_[groupIndex - 1];
+        }
+
+
     private:
         std::array<group_t,GroupNumber> groups_;
         std::unordered_map<key_t,int> teamsMap_;
     };
 
-    
+
 private:
     using basicInforTable_t = std::unordered_map<key_t,value_t>;
     using scoreInforTable_t = BSTree;
     using orderBookTable_t = OrderBookTable;
+    using buildingInforTable_t = std::unordered_map<std::string,BuildingInformation>;
     basicInforTable_t basicInfors_;
     scoreInforTable_t scoreInfors;
     orderBookTable_t orderBook_;
+    buildingInforTable_t buildingInfors_;
 };
 
 
@@ -167,20 +191,25 @@ class Queryer final
 
 public:
 
-    Queryer(TeamsInformationTable& table) :informations_(table) {}
+    explicit Queryer(InformationTable& table) noexcept :informations_(table) {}
 
 
-    
+
     void addTeam(const id_t& id,const BasicInformation& infor) noexcept {
         informations_.basicInfors_.insert(std::make_pair(id,infor));
         return;
     }
 
 
-    
-    void addTeamFromTxtFile(const std::string& path) {
+
+    void addTeamFromTxtFile(const std::string& path) noexcept {
         std::fstream fs;
-        fs.open(path);
+
+        try {
+            fs.open(path);
+        } catch (...) {
+            printf("fail to open the file: %s",path);
+        }
 
         id_t id;
         BasicInformation value;
@@ -214,24 +243,52 @@ public:
     }
 
 
-    
-    void spawnOrderBookFromTxtFile(const std::string& path) {
+
+    void loadBuildingInforsFromTexfile(const std::string& path) noexcept {
         std::fstream fs;
-        fs.open(path);
+        try {
+            fs.open(path);
+        } catch (...) {
+            printf("fail to open the file: %s",path);
+        }
+
+        std::string str = "";
+        char symbol{};
+        while (fs >> str >> symbol) {
+            informations_.buildingInfors_.insert(
+                std::make_pair(str,BuildingInformation{ str }));
+
+        }
+
+        fs.close();
+        return;
+    }
+
+
+
+    void spawnOrderBookFromTxtFile(const std::string& path) noexcept {
+        std::fstream fs;
+        try {
+            fs.open(path);
+        } catch (...) {
+            printf("fail to open the file: %s",path);
+        }
+
         int groupIndex;
         id_t id;
         std::string str;
         std::getline(fs,str);
-        while (fs >> groupIndex>> id) {
+        while (fs >> groupIndex >> id) {
             informations_.orderBook_.addTeam(id,groupIndex);
             std::getline(fs,str);
         }
+
         fs.close();
     }
-    
 
 
-    void distributeScore() {
+
+    void distributeScore() noexcept {
         for (auto &[key,value] : informations_.basicInfors_) {
             int score = 40 + std::rand() % 61;
             informations_.scoreInfors.insert(key,score);
@@ -239,7 +296,7 @@ public:
     }
 
 
-    
+
     bool exist(const id_t& id) const noexcept {
         if (auto it = informations_.basicInfors_.find(id);
             it != informations_.basicInfors_.end()) {
@@ -249,63 +306,105 @@ public:
     }
 
 
-    
-    BasicInformation queryInformation(const id_t& id) const {
+
+    const BasicInformation* queryBasicInformation(const id_t& id) const noexcept {
         if (auto it = informations_.basicInfors_.find(id);
             it != informations_.basicInfors_.end()) {
-            const TeamsInformationTable::value_t& value = it->second;
-            return value;
-        }
-        assertm("the id not found",false);
-        throw CException{"the id not found"};
-        return {};
-    }
-
-
-    
-    void modifyInformation(const id_t& id,const BasicInformation& infor) {
-        if (auto it = informations_.basicInfors_.find(id);
-            it != informations_.basicInfors_.end()) {
-            it->second = infor;
+            const InformationTable::value_t& value = it->second;
+            return &value;
         } else {
-            assertm("the id not found",false);
-            throw CException{ "the id not found" };
+            return nullptr;
         }
-        return;
     }
 
 
 
-    int queryScore(const id_t& id) const {
+    BasicInformation* queryBasicInformation(const id_t& id) noexcept {
+        if (auto it = informations_.basicInfors_.find(id);
+            it != informations_.basicInfors_.end()) {
+            InformationTable::value_t& value = it->second;
+            return &value;
+        } else {
+            return nullptr;
+        }
+    }
+
+
+
+    int* queryScore(const id_t& id) const noexcept {
         if (auto it = informations_.scoreInfors.find(id);it) {
-            return *it;
+            return it;
         } else {
-            assertm("not found id",false);
-            throw CException{ "not found id" };
+            return nullptr;
         }
-        return -1;
     }
-    
 
-    
-    int queryGroupIndex(const id_t& id) const {
+
+
+    const int* queryScore(const id_t& id) noexcept {
+        if (auto it = informations_.scoreInfors.find(id);it) {
+            return it;
+        } else {
+            return nullptr;
+        }
+    }
+
+
+
+    int queryGroupIndex(const id_t& id) const noexcept {
         return informations_.orderBook_.queryGroupIndex(id);
     }
 
 
-    
-    const std::vector<id_t>& getGroup(int groupIndex) const {
-        return informations_.orderBook_.getGroup(groupIndex);
-    }
 
-
-    
-    void for_each(std::function<void(const id_t& id)>&& func) noexcept {
-        for (auto it = informations_.basicInfors_.begin();
-            it != informations_.basicInfors_.end();++it) {
-            func(it->first);
+    const BuildingInformation* queryBuildingInformation(const std::string& buildName) const noexcept {
+        if (auto it = informations_.buildingInfors_.find(buildName);it != informations_.buildingInfors_.end()) {
+            return &it->second;
+        } else {
+            return nullptr;
         }
     }
+
+
+
+    BuildingInformation* queryBuildingInformation(const std::string& buildName) noexcept {
+        if (auto it = informations_.buildingInfors_.find(buildName);it != informations_.buildingInfors_.end()) {
+            return &it->second;
+        } else {
+            return nullptr;
+        }
+    }
+
+
+
+    const std::vector<id_t>& getGroup(int groupIndex) const {
+        const auto& res = informations_.orderBook_.getGroup(groupIndex);
+        return res;
+    }
+
+
+
+    std::vector<id_t>& getGroup(int groupIndex) {
+        auto& res = informations_.orderBook_.getGroup(groupIndex);
+        return res;
+    }
+
+
+
+    void for_each(std::function<void (const id_t& id,BasicInformation& infor)>&& func) {
+        for (auto&[key,value] : informations_.basicInfors_) {
+            func(key,value);
+        }
+    }
+
+
+
+    void for_each(std::function<void (const id_t& id,const BasicInformation& infor)>&& func) const {
+        for (const auto&[key,value] : informations_.basicInfors_) {
+            func(key,value);
+        }
+    }
+
 
 
     
@@ -315,7 +414,7 @@ public:
 
 
 private:
-    TeamsInformationTable& informations_;
+    InformationTable& informations_;
 };
 
 

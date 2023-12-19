@@ -28,6 +28,15 @@ struct BasicInformation
 };
 
 
+
+struct BuildingInformation final
+{
+    std::string name;
+    
+};
+
+
+
 struct CException final
 {
     std::string message;
