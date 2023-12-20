@@ -13,9 +13,8 @@ int main() {
     Queryer queryer(table);
     queryer.addTeamFromTxtFile("../Assets/team.txt");
     queryer.spawnOrderBookFromTxtFile("../Assets/决赛分组-江科大.txt");
-    queryer.distributeScore();
 
-    Presenter presenter(queryer);
-    presenter.run();
+    Presenter presenter;
+    presenter.run(queryer);
     return 0;
 }

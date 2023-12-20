@@ -268,12 +268,12 @@ public:
 
     void spawnOrderBookFromTxtFile(const std::string& path) noexcept {
         std::fstream fs;
-        try {
-            fs.open(path);
-        } catch (...) {
-            printf("fail to open the file: %s",path);
-        }
-
+        // try {
+        //     fs.open(path);
+        // } catch (...) {
+        //     printf("fail to open the file: %s",path.c_str());
+        // }
+        fs.open(path);
         int groupIndex;
         id_t id;
         std::string str;
@@ -284,6 +284,8 @@ public:
         }
 
         fs.close();
+
+        distributeScore();
     }
 
 
