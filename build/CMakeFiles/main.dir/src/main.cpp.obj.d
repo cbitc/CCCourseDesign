@@ -191,6 +191,11 @@ CMakeFiles/main.dir/src/main.cpp.obj: \
  C:/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/bits/random.tcc \
  C:/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/numeric \
  C:/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/bits/stl_numeric.h \
+ C:/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/queue \
+ C:/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/deque \
+ C:/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/bits/stl_deque.h \
+ C:/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/bits/deque.tcc \
+ C:/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/bits/stl_queue.h \
  C:/Users/86173/Desktop/CCCourseDesign/include/Presenter.hpp \
  C:/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/thread \
  C:/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/chrono \
@@ -207,11 +212,6 @@ CMakeFiles/main.dir/src/main.cpp.obj: \
  C:/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/bits/atomic_base.h \
  C:/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/bits/atomic_lockfree_defines.h \
  C:/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/backward/auto_ptr.h \
- C:/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/queue \
- C:/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/deque \
- C:/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/bits/stl_deque.h \
- C:/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/bits/deque.tcc \
- C:/mingw64/lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/bits/stl_queue.h \
  C:/mingw64/x86_64-w64-mingw32/include/Windows.h \
  C:/mingw64/x86_64-w64-mingw32/include/sdkddkver.h \
  C:/mingw64/x86_64-w64-mingw32/include/excpt.h \

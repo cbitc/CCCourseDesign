@@ -36,10 +36,14 @@ public:
         std::string input;
         while (true) {
             stream_.clear();
-            printf("input the id of team you want to query or -b to exit\n>>");
+            printf("input the id of team you want to query or ASL to query ASL or -b to exit\n>>");
             cin >> input;
             if (input == "-b") {
                 break;
+            }
+            if (input == "ASL") {
+                cout << '\n' << queryer.ASL() << '\n';
+                continue;
             }
             id_t id;
             stream_ << input;stream_ >> id;
@@ -168,6 +172,7 @@ public:
 
 
     void entryFinalFeatures(const Queryer queryer) noexcept {
+
         std::array<GroupInfor,GroupNumber> groups;
 
         for (int i = 1;i <= GroupNumber;i++) {
@@ -237,11 +242,11 @@ public:
 
                 printf("\n\n\n\n");
             }
-            
+
             printf("\ninput the delta\n");
             cin >> delta;
             minutes += delta;
-            hours += minutes/60;
+            hours += minutes / 60;
             minutes %= 60;
             system("cls");
         }
@@ -254,6 +259,79 @@ public:
 
 
 
+    void navigationFeatures(const Queryer queryer) {
+        printf("Navigation is being used\n");
+        printf("Provides the following building information and its navigation\n");
+        queryer.for_each_building([](const BuildingInformation& infor) {
+            printf("%s\n",infor.name.c_str());
+            });
+
+        printf("input:\n1 to query BuildingInformation\n2 to navigation\n-b to exit\n");
+        bool isQuit = false;
+        while (!isQuit) {
+            stream_.clear();
+            cout << ">>";
+            std::string input;
+            cin >> input;
+            if (input == "-b") {
+                isQuit = true;
+            } else if (input == "1") {
+                queryBuildingRequest(queryer);
+            } else if (input == "2") {
+                navigationRequest(queryer);
+            } else {
+                printf("");
+                continue;
+            }
+        }
+        printf("Exit to navigation\n");
+    }
+
+
+
+    void queryBuildingRequest(const Queryer queryer) noexcept {
+        printf("input the name of building you want to query or -b to exit \n");
+        std::string input;
+
+        while (true) {
+            printf(">>");
+            cin >> input;
+            if (input == "-b") {
+                break;
+            }
+            const BuildingInformation* infor = queryer.queryBuildingInformation(input);
+            if (infor) {
+                printf("infor: %s\n",infor->name.c_str());
+            } else {
+                printf("the building not exist\n");
+            }
+        }
+        printf("Exit to query!\n");
+    }
+
+
+
+    void navigationRequest(const Queryer queryer) {
+        printf("input current location and where you want to go or -b to exit\n");
+        std::string current,go;
+
+        printf("current location:\n>>");
+        cin >> current;
+        printf("want to go:\n>>");
+        cin >> go;
+        try {
+            const auto res = queryer.queryPathTwoPoint(current,go);
+            cout << '\n' << res.second.front();
+            for (int i = 1;i < res.second.size();i++) {
+                cout << "->" << res.second[i];
+            }
+            printf("\ntotal:%d\n",res.first);
+        } catch (const CException& exp) {
+            printf("fail to navigat,please make sure the building exist\n");
+        }
+
+
+    }
 
 
     void menuFeatures(Queryer queryer,bool& isQuit) noexcept {
@@ -273,7 +351,7 @@ public:
         } else if (input == "2") {
             entryFinalFeatures(queryer);
         } else if (input == "3") {
-
+            navigationFeatures(queryer);
         } else {
 
         }
@@ -284,7 +362,7 @@ public:
 
     void run(Queryer queryer) {
         _displayMenu();
-        
+
         bool isQuit = false;
         while (!isQuit) {
             menuFeatures(queryer,isQuit);
